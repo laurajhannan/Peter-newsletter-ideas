@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Peter's Newsletter — Idea Capture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2F0EA;
+    --card:#FBFAF6;
+    --ink:#1E2A33;
+    --ink-soft:#5C6770;
+    --accent:#9B6A2F;
+    --accent-soft:#C9A36A;
+    --line:#E2DED4;
+    --line-strong:#D2CCBE;
+    --ok:#2F6B4F;
+    --radius:10px;
+    --maxw:720px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:var(--maxw);
+    margin:0 auto;
+    padding:32px 22px 80px;
+  }
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--accent);
+    font-weight:600;
+    margin:0 0 6px;
+  }
+  h1{
+    font-family:'Newsreader',Georgia,serif;
+    font-weight:500;
+    font-size:30px;
+    line-height:1.15;
+    margin:0 0 14px;
+    letter-spacing:-.01em;
+  }
+  .lede{color:var(--ink-soft);font-size:16px;margin:0 0 8px;max-width:56ch;}
+  .layout{display:flex;gap:34px;align-items:flex-start;margin-top:30px;}
+  /* progress spine */
+  .spine{flex:0 0 132px;position:sticky;top:32px;}
+  .spine ol{list-style:none;margin:0;padding:0;}
+  .spine li{
+    position:relative;
+    padding:0 0 16px 20px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    letter-spacing:.02em;
+  }
+  .spine li::before{
+    content:"";
+    position:absolute;left:3px;top:4px;
+    width:8px;height:8px;border-radius:50%;
+    background:var(--paper);
+    border:1.5px solid var(--line-strong);
+  }
+  .spine li::after{
+    content:"";
+    position:absolute;left:6.2px;top:13px;
+    width:1.5px;height:calc(100% - 9px);
+    background:var(--line);
+  }
+  .spine li:last-child::after{display:none;}
+  .spine li.done{color:var(--ink);}
+  .spine li.done::before{background:var(--accent-soft);border-color:var(--accent-soft);}
+  .spine li.active{color:var(--ink);font-weight:600;}
+  .spine li.active::before{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 4px rgba(155,106,47,.14);}
+  /* panel */
+  .panel{flex:1 1 auto;min-width:0;}
+  .qcard{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:26px 26px 22px;
+    box-shadow:0 1px 0 rgba(30,42,51,.03);
+  }
+  .stagelabel{
+    font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);font-weight:600;margin:0 0 12px;
+  }
+  .question{
+    font-family:'Newsreader',Georgia,serif;
+    font-size:22px;line-height:1.32;font-weight:500;
+    margin:0 0 6px;letter-spacing:-.005em;
+  }
+  .hint{color:var(--ink-soft);font-size:14.5px;margin:8px 0 16px;max-width:54ch;}
+  .example{
+    border-left:2px solid var(--accent-soft);
+    padding:4px 0 4px 14px;margin:12px 0 16px;
+    color:var(--ink-soft);font-size:14px;font-style:italic;
+    font-family:'Newsreader',Georgia,serif;
+  }
+  textarea{
+    width:100%;border:1px solid var(--line-strong);border-radius:8px;
+    background:#fff;color:var(--ink);
+    font-family:'Inter',sans-serif;font-size:15.5px;line-height:1.5;
+    padding:13px 14px;resize:none;min-height:104px;overflow:hidden;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(155,106,47,.14);}
+  .choices{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
+  .choice{
+    text-align:left;border:1px solid var(--line-strong);background:#fff;
+    border-radius:9px;padding:14px 16px;cursor:pointer;
+    font-family:'Inter',sans-serif;color:var(--ink);
+    transition:border-color .14s ease, background .14s ease, transform .04s ease;
+  }
+  .choice:hover{border-color:var(--accent-soft);background:#FFFDF8;}
+  .choice:focus-visible{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(155,106,47,.14);}
+  .choice:active{transform:translateY(1px);}
+  .choice.sel{border-color:var(--accent);background:#FBF4E9;}
+  .choice .ct{font-weight:600;font-size:15px;display:block;margin-bottom:2px;}
+  .choice .cd{color:var(--ink-soft);font-size:13.5px;}
+  .controls{display:flex;align-items:center;gap:12px;margin-top:20px;flex-wrap:wrap;}
+  button.btn{
+    font-family:'Inter',sans-serif;font-weight:600;font-size:14.5px;
+    border-radius:8px;padding:11px 20px;cursor:pointer;border:1px solid transparent;
+    transition:background .14s ease,border-color .14s ease,opacity .14s;
+  }
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:#875c28;}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+  .btn-ghost{background:transparent;color:var(--ink-soft);border-color:transparent;padding:11px 8px;}
+  .btn-ghost:hover{color:var(--ink);}
+  .btn-secondary{background:#fff;color:var(--ink);border-color:var(--line-strong);}
+  .btn-secondary:hover{border-color:var(--accent-soft);}
+  .meta{font-size:13px;color:var(--ink-soft);margin-left:auto;}
+  .skip{font-size:13.5px;color:var(--ink-soft);text-decoration:underline;background:none;border:none;cursor:pointer;font-family:inherit;}
+  .skip:hover{color:var(--accent);}
+  .fade{animation:fade .24s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  /* intro + review */
+  .intro .qcard{padding:30px 28px;}
+  .introlist{margin:14px 0 4px;padding:0;list-style:none;color:var(--ink-soft);font-size:14.5px;}
+  .introlist li{padding:5px 0 5px 22px;position:relative;}
+  .introlist li::before{content:"";position:absolute;left:2px;top:11px;width:6px;height:6px;border-radius:50%;background:var(--accent-soft);}
+  .brief{
+    background:#fff;border:1px solid var(--line-strong);border-radius:8px;
+    padding:18px 18px;white-space:pre-wrap;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
+    line-height:1.6;color:var(--ink);max-height:340px;overflow:auto;
+  }
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .field{display:flex;flex-direction:column;gap:5px;margin:14px 0;}
+  .field label{font-size:13px;color:var(--ink-soft);font-weight:500;}
+  .field input{
+    border:1px solid var(--line-strong);border-radius:7px;padding:9px 11px;
+    font-family:inherit;font-size:14.5px;color:var(--ink);background:#fff;max-width:320px;
+  }
+  .field input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(155,106,47,.14);}
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+    background:var(--ink);color:#fff;padding:10px 18px;border-radius:8px;
+    font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;
+  }
+  .toast.show{opacity:1;}
+  .banked{font-size:13px;color:var(--ok);font-weight:500;margin:0 0 10px;}
+  .resumebar{
+    background:#FBF4E9;border:1px solid var(--accent-soft);border-radius:9px;
+    padding:13px 16px;margin:0 0 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+    font-size:14px;
+  }
+  @media (max-width:640px){
+    .layout{flex-direction:column;gap:0;}
+    .spine{position:static;flex-basis:auto;width:100%;margin-bottom:18px;}
+    .spine ol{display:flex;flex-wrap:wrap;gap:4px 14px;}
+    .spine li{padding:0 0 0 16px;}
+    .spine li::after{display:none;}
+    h1{font-size:25px;}
+    .question{font-size:20px;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .fade{animation:none;}
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Voodoo · Fortnightly leapfrog</p>
+  <h1>Peter's newsletter — idea capture</h1>
+  <p class="lede">A short interview to get one idea out of your head and into a brief Laura can turn into an edition. Built around the things only you have seen.</p>
+
+  <div class="layout">
+    <nav class="spine" aria-hidden="true"><ol id="spine"></ol></nav>
+    <main class="panel" id="panel" aria-live="polite"></main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var STORE_KEY="voodoo_nl_interview_v1";
+  var EMAIL_KEY="voodoo_nl_editor_email";
+  var DEFAULT_EMAIL="laura@kaihoko.co.uk";
+
+  var MOVES=[
+    {k:"reframe",t:"Reframe",d:"Challenge something the industry keeps repeating uncritically. The “you might be looking at this wrong” move."},
+    {k:"pattern",t:"Failure pattern",d:"A quiet way D2C launches or operations go wrong that you are seeing across client work."},
+    {k:"boardroom",t:"Boardroom translation",d:"What a headline or data point actually means once you are sat in the board meeting."},
+    {k:"premortem",t:"Pre-mortem",d:"A common D2C move, and how to spot the failure before anyone makes it."},
+    {k:"open",t:"Not sure yet",d:"Just talk it through. We will find the angle from the story."}
+  ];
+  var PILLARS=[
+    {k:"diagnostic",t:"Why D2C launches fail",tag:"pillar_diagnostic"},
+    {k:"methodology",t:"From speculation to evidence",tag:"pillar_methodology"},
+    {k:"architecture",t:"Building the D2C operating model",tag:"pillar_architecture"},
+    {k:"forensics",t:"Reading the data honestly",tag:"pillar_forensics"},
+    {k:"systems",t:"Bridging legacy and digital",tag:"pillar_systems"},
+    {k:"unsure",t:"Not sure — Laura can tag it",tag:""}
+  ];
+
+  // story question text by move
+  var Q={
+    situation:{
+      reframe:["The belief, and where it cracked","What is the thing the industry keeps saying that you have watched not hold up? Set the scene: who was the client (we will anonymise), and what were they trying to do?"],
+      pattern:["The situation","Describe a recent moment this failure pattern showed up. Who was the client (we will anonymise), and what were they trying to do?"],
+      boardroom:["The number, and the room","What is the data point or headline? And whose board were you in front of when it came up? Set the scene."],
+      premortem:["The move people make","What is the common move people make here? Describe a time you watched someone make it: who were they (anonymised), and what were they trying to do?"],
+      open:["The story","Tell me the story. A recent client moment that has stuck with you. Who were they (we will anonymise), and what were they trying to do?"]
+    },
+    moment:{
+      reframe:["What actually happened","What happened that showed the received wisdom was wrong?"],
+      pattern:["Where it turned","What was the moment it went wrong? The bit nobody saw coming?"],
+      boardroom:["What they missed","What did the board wrongly conclude from the number? What were they not seeing?"],
+      premortem:["The tell","What was the tell? The early sign, visible to you, that this was heading for trouble?"],
+      open:["What surprised you","What was the moment it turned? What surprised you, or them?"]
+    }
+  };
+
+  var STEPS=[
+    {key:"move",type:"choice",stage:"Angle"},
+    {key:"pillar",type:"choice",stage:"Angle",label:"Which pillar does this sit in?",hint:"Your best guess is fine. It only helps with tagging and routing later."},
+    {key:"situation",type:"text",stage:"Story",required:true},
+    {key:"moment",type:"text",stage:"Story",required:true},
+    {key:"detail",type:"text",stage:"Story",required:false,label:"A concrete detail or number",hint:"Anything that makes it real — the thing you would remember from the room. Optional."},
+    {key:"reframe",type:"text",stage:"So what",required:true,label:"The so-what",hint:"In a sentence or two: the lesson you would want a CMO or an MD to walk away with."},
+    {key:"takeaway",type:"text",stage:"Takeaway",required:true,label:"The Monday takeaway",hint:"One thing the reader can do, ask, or look for this week. Specific enough to act on.",example:"Before you sign off the next launch milestone, walk the warehouse. Ask whoever will pick the first hundred consumer orders to describe their day. The gap between their answer and the launch plan is the risk."},
+    {key:"subject",type:"text",stage:"Extras",required:false,label:"A line for the title?",hint:"8 to 12 words, the insight stated plainly, no clickbait. Or leave blank and we will draft options. Optional."},
+    {key:"cornerstone",type:"text",stage:"Extras",required:false,label:"Does it connect to a cornerstone piece?",hint:"Any article on the site, or a piece you want it to point to. Optional."},
+    {key:"sensitivities",type:"text",stage:"Extras",required:false,label:"Anything to flag?",hint:"A client who must not be identifiable, a topic to handle carefully, anything off-limits. Optional."},
+    {key:"review",type:"review",stage:"Review"}
+  ];
+  var STAGES=["Angle","Story","So what","Takeaway","Extras","Review"];
+
+  var state=blank();
+  function blank(){return {move:null,pillar:null,answers:{},editions:[],startedAt:new Date().toISOString()};}
+
+  // ---------- storage (graceful) ----------
+  function save(){
+    try{
+      if(window.storage&&window.storage.set){window.storage.set(STORE_KEY,JSON.stringify(state),false);}
+      else{localStorage.setItem(STORE_KEY,JSON.stringify(state));}
+    }catch(e){/* in-memory only */}
+  }
+  function loadSaved(cb){
+    try{
+      if(window.storage&&window.storage.get){
+        window.storage.get(STORE_KEY,false).then(function(r){cb(r&&r.value?JSON.parse(r.value):null);}).catch(function(){cb(localFallback());});
+        return;
+      }
+    }catch(e){}
+    cb(localFallback());
+  }
+  function localFallback(){try{var v=localStorage.getItem(STORE_KEY);return v?JSON.parse(v):null;}catch(e){return null;}}
+  function getEmail(){try{return localStorage.getItem(EMAIL_KEY)||DEFAULT_EMAIL;}catch(e){return DEFAULT_EMAIL;}}
+  function setEmail(v){try{localStorage.setItem(EMAIL_KEY,v);}catch(e){}}
+
+  var stepIndex=0;
+  var screen="intro"; // intro | step
+
+  // ---------- helpers ----------
+  function el(html){var d=document.createElement("div");d.innerHTML=html.trim();return d.firstChild;}
+  function moveLabel(k){for(var i=0;i<MOVES.length;i++)if(MOVES[i].k===k)return MOVES[i].t;return "—";}
+  function pillarObj(k){for(var i=0;i<PILLARS.length;i++)if(PILLARS[i].k===k)return PILLARS[i];return null;}
+  function toast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},1700);}
+
+  function questionFor(step){
+    if(step.key==="situation"||step.key==="moment"){
+      var m=state.move||"open";var pair=Q[step.key][m]||Q[step.key].open;
+      return {label:pair[0],q:pair[1]};
+    }
+    if(step.key==="move")return {label:"The angle",q:"Which kind of idea is this?"};
+    return {label:step.stage,q:step.label};
+  }
+
+  // ---------- render ----------
+  function renderSpine(){
+    var ol=document.getElementById("spine");ol.innerHTML="";
+    var activeStage = screen==="intro" ? null : STEPS[stepIndex].stage;
+    var reached={};var passed=true;
+    // mark stages done up to current
+    var curIdx=STAGES.indexOf(activeStage);
+    STAGES.forEach(function(s,i){
+      var li=document.createElement("li");li.textContent=s;
+      if(activeStage){
+        if(i<curIdx)li.className="done";
+        else if(i===curIdx)li.className="active";
+      }
+      ol.appendChild(li);
+    });
+  }
+
+  function render(){
+    renderSpine();
+    var panel=document.getElementById("panel");panel.innerHTML="";
+    if(screen==="intro"){panel.appendChild(introCard());return;}
+    var step=STEPS[stepIndex];
+    if(step.type==="review"){panel.appendChild(reviewCard());return;}
+    if(step.type==="choice"&&step.key==="move"){panel.appendChild(choiceCard("move",MOVES));return;}
+    if(step.type==="choice"&&step.key==="pillar"){panel.appendChild(choiceCard("pillar",PILLARS));return;}
+    panel.appendChild(textCard(step));
+  }
+
+  function introCard(){
+    var c=el('<div class="intro fade"></div>');
+    var card=el('<div class="qcard"></div>');
+    card.appendChild(el('<p class="stagelabel">About 10 minutes</p>'));
+    card.appendChild(el('<p class="question">One idea, in your own words.</p>'));
+    card.appendChild(el('<p class="hint">I will ask a handful of questions to pull out a single newsletter idea from your experience. There are no wrong answers and you do not need to write neatly. Tell it the way you would tell it in the room.</p>'));
+    var ul=el('<ul class="introlist"></ul>');
+    ["One good idea is plenty. You can capture more than one if they come.","Your answers save as you go, so you can stop and come back.","At the end you get a tidy brief to copy, download, or email to Laura."].forEach(function(t){var li=document.createElement("li");li.textContent=t;ul.appendChild(li);});
+    card.appendChild(ul);
+    var ctr=el('<div class="controls"></div>');
+    var begin=el('<button class="btn btn-primary">Begin</button>');
+    begin.onclick=function(){screen="step";stepIndex=0;render();focusInput();};
+    ctr.appendChild(begin);
+    if(hasProgress()){
+      var resume=el('<button class="btn btn-ghost">Resume previous</button>');
+      resume.onclick=function(){screen="step";stepIndex=firstUnfilled();render();focusInput();};
+      ctr.appendChild(resume);
+    }
+    card.appendChild(ctr);
+    c.appendChild(card);
+    return c;
+  }
+
+  function choiceCard(kind,opts){
+    var c=el('<div class="qcard fade"></div>');
+    var qf=questionFor(STEPS[stepIndex]);
+    c.appendChild(el('<p class="stagelabel">'+STEPS[stepIndex].stage+'</p>'));
+    c.appendChild(el('<p class="question"></p>')).textContent=qf.q;
+    if(kind==="pillar")c.appendChild(el('<p class="hint">'+STEPS[stepIndex].hint+'</p>'));
+    var box=el('<div class="choices"></div>');
+    opts.forEach(function(o){
+      var sel=(kind==="move"?state.move:state.pillar)===o.k;
+      var b=el('<button class="choice'+(sel?' sel':'')+'"></button>');
+      b.appendChild(el('<span class="ct"></span>')).textContent=o.t;
+      if(o.d)b.appendChild(el('<span class="cd"></span>')).textContent=o.d;
+      b.onclick=function(){
+        if(kind==="move")state.move=o.k;else state.pillar=o.k;
+        save();next();
+      };
+      box.appendChild(b);
+    });
+    c.appendChild(box);
+    c.appendChild(navControls(false));
+    return c;
+  }
+
+  function textCard(step){
+    var c=el('<div class="qcard fade"></div>');
+    var qf=questionFor(step);
+    c.appendChild(el('<p class="stagelabel">'+step.stage+'</p>'));
+    var qp=el('<p class="question"></p>');qp.textContent=qf.q;c.appendChild(qp);
+    if(step.key!=="situation"&&step.key!=="moment"&&step.hint){c.appendChild(el('<p class="hint"></p>')).textContent=step.hint;}
+    if(step.example){var ex=el('<p class="example"></p>');ex.textContent="e.g. "+step.example;c.appendChild(ex);}
+    var ta=el('<textarea id="inp" rows="3"></textarea>');
+    ta.value=state.answers[step.key]||"";
+    ta.placeholder=step.required?"Type your answer…":"Type your answer, or skip…";
+    ta.addEventListener("input",function(){autosize(ta);state.answers[step.key]=ta.value;save();syncPrimary();});
+    ta.addEventListener("keydown",function(e){
+      if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();if(canAdvance())next();}
+    });
+    c.appendChild(ta);
+    c.appendChild(navControls(!step.required));
+    return c;
+  }
+
+  function navControls(skippable){
+    var ctr=el('<div class="controls"></div>');
+    if(stepIndex>0||screen==="step"){
+      var back=el('<button class="btn btn-ghost">Back</button>');
+      back.onclick=prev;ctr.appendChild(back);
+    }
+    var primary=el('<button class="btn btn-primary" id="primary">Continue</button>');
+    primary.onclick=function(){if(canAdvance())next();};
+    ctr.appendChild(primary);
+    if(skippable){
+      var sk=el('<button class="skip">Skip this</button>');
+      sk.onclick=function(){next();};
+      ctr.appendChild(sk);
+    }
+    ctr.appendChild(el('<span class="meta">'+(stepIndex+1)+' of '+STEPS.length+'</span>'));
+    return ctr;
+  }
+
+  function reviewCard(){
+    var c=el('<div class="qcard fade"></div>');
+    c.appendChild(el('<p class="stagelabel">Review</p>'));
+    c.appendChild(el('<p class="question">Here is the brief.</p>'));
+    c.appendChild(el('<p class="hint">This is what Laura receives. Have a quick read. You can go back and change anything, capture another idea, or send it across.</p>'));
+    if(state.editions.length){c.appendChild(el('<p class="banked">'+state.editions.length+' idea'+(state.editions.length>1?'s':'')+' already captured this session.</p>'));}
+    var brief=el('<div class="brief"></div>');brief.textContent=allBriefs();c.appendChild(brief);
+
+    var emailField=el('<div class="field"><label for="em">Send to</label><input id="em" type="email" placeholder="laura@kaihoko.co.uk" /></div>');
+    c.appendChild(emailField);
+    var emInput=emailField.querySelector("input");emInput.value=getEmail();
+    emInput.addEventListener("input",function(){setEmail(emInput.value);});
+
+    var row=el('<div class="row" style="margin-top:6px"></div>');
+    var copy=el('<button class="btn btn-secondary">Copy brief</button>');
+    copy.onclick=function(){copyText(allBriefs());};
+    var dl=el('<button class="btn btn-secondary">Download</button>');
+    dl.onclick=function(){download(allBriefs());};
+    var mail=el('<button class="btn btn-primary">Email to Laura</button>');
+    mail.onclick=function(){emailBrief(emInput.value);};
+    row.appendChild(copy);row.appendChild(dl);row.appendChild(mail);
+    c.appendChild(row);
+
+    var row2=el('<div class="row" style="margin-top:14px"></div>');
+    var another=el('<button class="btn btn-ghost">＋ Capture another idea</button>');
+    another.onclick=captureAnother;
+    var back=el('<button class="btn btn-ghost">Back</button>');
+    back.onclick=prev;
+    var reset=el('<button class="btn btn-ghost">Start over</button>');
+    reset.onclick=function(){if(confirm("Clear everything captured this session?")){state=blank();save();screen="intro";stepIndex=0;render();}};
+    row2.appendChild(back);row2.appendChild(another);row2.appendChild(reset);
+    c.appendChild(row2);
+    return c;
+  }
+
+  // ---------- flow ----------
+  function canAdvance(){
+    var step=STEPS[stepIndex];
+    if(step.type!=="text")return true;
+    if(step.required)return (state.answers[step.key]||"").trim().length>0;
+    return true;
+  }
+  function syncPrimary(){var p=document.getElementById("primary");if(p)p.disabled=!canAdvance();}
+  function next(){if(stepIndex<STEPS.length-1){stepIndex++;render();focusInput();}}
+  function prev(){if(stepIndex>0){stepIndex--;render();focusInput();}else{screen="intro";render();}}
+  function focusInput(){syncPrimary();var i=document.getElementById("inp");if(i){autosize(i);setTimeout(function(){i.focus();},30);}}
+  function autosize(t){t.style.height="auto";t.style.height=Math.max(104,t.scrollHeight)+"px";}
+
+  function hasProgress(){return !!(state.move||(state.answers&&Object.keys(state.answers).some(function(k){return (state.answers[k]||"").trim();}))||state.editions.length);}
+  function firstUnfilled(){
+    for(var i=0;i<STEPS.length;i++){var s=STEPS[i];if(s.type==="text"&&s.required&&!(state.answers[s.key]||"").trim())return i;if(s.type==="choice"){if(s.key==="move"&&!state.move)return i;if(s.key==="pillar"&&!state.pillar)return i;}}
+    return STEPS.length-1;
+  }
+
+  function captureAnother(){
+    state.editions.push(currentEdition());
+    state.move=null;state.pillar=null;state.answers={};
+    save();stepIndex=0;render();focusInput();
+    toast("Idea saved. Starting the next one.");
+  }
+
+  // ---------- brief building ----------
+  function currentEdition(){
+    return {move:state.move,pillar:state.pillar,answers:JSON.parse(JSON.stringify(state.answers))};
+  }
+  function briefText(ed,n){
+    var a=ed.answers||{};
+    var p=pillarObj(ed.pillar);
+    var pillarLine=p?(p.t+(p.tag?(" (suggested tag: "+p.tag+")"):"")):"—";
+    var story=(a.situation||"").trim();
+    if((a.moment||"").trim())story+= (story?"\n\n":"")+a.moment.trim();
+    if((a.detail||"").trim())story+= (story?"\n\n":"")+a.detail.trim();
+    var date=new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+    return [
+      "## Newsletter Edition Brief "+n,
+      "Date captured: "+date,
+      "Captured from: Peter",
+      "Leapfrog move: "+moveLabel(ed.move),
+      "Pillar: "+pillarLine,
+      "Working subject line (Peter's): "+((a.subject||"").trim()||"— none supplied; draft options"),
+      "Relates to cornerstone: "+((a.cornerstone||"").trim()||"—"),
+      "",
+      "### The story (raw, in Peter's words)",
+      story||"—",
+      "",
+      "### The reframe / so what",
+      (a.reframe||"").trim()||"—",
+      "",
+      "### Monday takeaway",
+      (a.takeaway||"").trim()||"—",
+      "",
+      "### Notes / sensitivities",
+      (a.sensitivities||"").trim()||"—"
+    ].join("\n");
+  }
+  function allBriefs(){
+    var eds=state.editions.slice();
+    // include current in-progress edition if it has any content
+    var cur=currentEdition();var hasCur=(cur.move||Object.keys(cur.answers).some(function(k){return (cur.answers[k]||"").trim();}));
+    if(hasCur)eds=eds.concat([cur]);
+    if(!eds.length)return "(nothing captured yet)";
+    return eds.map(function(e,i){return briefText(e,i+1);}).join("\n\n———————————————\n\n");
+  }
+
+  // ---------- output actions ----------
+  function copyText(txt){
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast("Brief copied to clipboard.");},fallbackCopy.bind(null,txt));}
+    else fallbackCopy(txt);
+  }
+  function fallbackCopy(txt){var ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Brief copied.");}catch(e){toast("Press Ctrl/Cmd+C to copy.");}document.body.removeChild(ta);}
+  function download(txt){
+    var blob=new Blob([txt],{type:"text/markdown"});
+    var url=URL.createObjectURL(blob);var a=document.createElement("a");
+    a.href=url;a.download="peter-newsletter-brief-"+new Date().toISOString().slice(0,10)+".md";
+    document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+    toast("Brief downloaded.");
+  }
+  function emailBrief(to){
+    var subject="Newsletter idea from Peter — "+new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long"});
+    var body=allBriefs();
+    var href="mailto:"+encodeURIComponent(to||"")+"?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(body);
+    if(body.length>1500){copyText(body);toast("Brief copied — paste it into the email if it looks short.");}
+    window.location.href=href;
+  }
+
+  // ---------- boot ----------
+  loadSaved(function(saved){
+    if(saved&&typeof saved==="object"){state=Object.assign(blank(),saved);if(!state.answers)state.answers={};if(!state.editions)state.editions=[];}
+    render();
+  });
+})();
+</script>
+</body>
+</html>
